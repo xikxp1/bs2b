@@ -1,0 +1,24 @@
+[package]
+name = "bs2b"
+version = "0.1.0"
+edition = "2024"
+description = "Bauer stereophonic-to-binaural (bs2b) DSP library in Rust"
+license = "MIT"
+readme = "README.md"
+keywords = ["audio", "dsp", "crossfeed", "binaural", "stereo"]
+categories = ["multimedia::audio"]
+authors = ["Ivan Kachalkin<xikxp1@gmail.com>"]
+publish = true
+repository = "https://github.com/xikxp1/bs2b"
+
+[dependencies]
+thiserror = "2.0.18"
+
+[dev-dependencies]
+approx = "0.5.1"
+criterion = "0.8.2"
+rand = "0.10.0"
+
+[[bench]]
+name = "process"
+harness = false
