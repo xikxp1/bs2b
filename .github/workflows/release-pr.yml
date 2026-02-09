@@ -1,13 +1,15 @@
-name: Release
+name: Release PR
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  release:
-    name: Publish
+  release-pr:
+    name: Update release PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,10 +24,9 @@ jobs:
       - name: Init Rust cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Publish with release-plz
+      - name: Create release PR with release-plz
         uses: release-plz/action@v0.5
         with:
-          command: release
+          command: release-pr
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
