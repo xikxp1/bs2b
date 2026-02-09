@@ -9,6 +9,9 @@ compile_error!(
     "features `std` and `no_std` are mutually exclusive; disable default features to use `no_std`"
 );
 
+#[cfg(feature = "streaming")]
+pub mod streaming;
+
 use core::f64::consts::{LN_10, PI};
 use core::fmt;
 

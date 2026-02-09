@@ -14,6 +14,7 @@ repository = "https://github.com/xikxp1/bs2b"
 [features]
 default = ["std"]
 std = []
+streaming = []
 no_std = ["dep:libm"]
 
 [dependencies]
