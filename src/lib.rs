@@ -1,13 +1,8 @@
 //! Bauer stereophonic-to-binaural (bs2b) crossfeed DSP.
 //!
 //! This crate implements the classic bs2b algorithm with an ergonomic Rust API.
-#![cfg_attr(feature = "no_std", no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
 #![forbid(unsafe_code)]
-
-#[cfg(all(feature = "std", feature = "no_std"))]
-compile_error!(
-    "features `std` and `no_std` are mutually exclusive; disable default features to use `no_std`"
-);
 
 #[cfg(feature = "streaming")]
 pub mod streaming;
@@ -372,32 +367,32 @@ fn log10(value: f64) -> f64 {
     ln(value) / LN_10
 }
 
-#[cfg(feature = "no_std")]
+#[cfg(not(feature = "std"))]
 fn powf(value: f64, power: f64) -> f64 {
     libm::pow(value, power)
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 fn powf(value: f64, power: f64) -> f64 {
     value.powf(power)
 }
 
-#[cfg(feature = "no_std")]
+#[cfg(not(feature = "std"))]
 fn exp(value: f64) -> f64 {
     libm::exp(value)
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 fn exp(value: f64) -> f64 {
     value.exp()
 }
 
-#[cfg(feature = "no_std")]
+#[cfg(not(feature = "std"))]
 fn ln(value: f64) -> f64 {
     libm::log(value)
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 fn ln(value: f64) -> f64 {
     value.ln()
 }
