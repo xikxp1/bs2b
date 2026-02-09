@@ -29,7 +29,7 @@ cargo add bs2b
 
 ```toml
 [dependencies]
-bs2b = { version = "0.1", default-features = false }
+bs2b = { version = "0.2", default-features = false }
 ```
 
 ## Quick Start
@@ -58,9 +58,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Choosing a Level
 
-- `Level::DEFAULT`: balanced general-purpose profile.
-- `Level::CMOY`: stronger crossfeed than default.
-- `Level::JMEIER`: strongest built-in crossfeed profile.
+- `Level::DEFAULT`: Closest to virtual speakers at ±30° azimuth, ~3 meters away. A moderate crossfeed.
+- `Level::CMOY`: Most popular setting. Matches the parameters of Chu Moy's well-known analog crossfeed circuit.
+- `Level::JMEIER`: Most subtle — makes the smallest changes to the original signal. Intended for relaxed listening. Matches Jan Meier's CORDA amplifier crossfeed.
 - Custom profile:
 
 ```rust
@@ -88,7 +88,7 @@ Enable the feature:
 
 ```toml
 [dependencies]
-bs2b = { version = "0.1", features = ["streaming"] }
+bs2b = { version = "0.2", features = ["streaming"] }
 ```
 
 cpal-style callback buffer processing:
