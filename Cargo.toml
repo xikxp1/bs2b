@@ -1,6 +1,6 @@
 [package]
 name = "bs2b"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Bauer stereophonic-to-binaural (bs2b) DSP library in Rust"
 license = "MIT"
