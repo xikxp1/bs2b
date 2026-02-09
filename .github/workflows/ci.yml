@@ -33,4 +33,4 @@ jobs:
         run: cargo test
 
       - name: Run tests (no_std)
-        run: cargo test --no-default-features --features no_std -- -D warnings
+        run: cargo test --no-default-features --features no_std
