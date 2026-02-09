@@ -100,9 +100,9 @@ impl Level {
         Self::new(cut_frequency_hz, feed_db_tenths)
     }
 
-    /// Delay at low frequencies, in microseconds.
+    /// Delay at low frequencies, in microseconds (truncated to integer).
     pub const fn delay_microseconds(self) -> u32 {
-        (18_700 / self.cut_frequency_hz) * 10
+        187_000 / self.cut_frequency_hz
     }
 }
 
@@ -577,7 +577,7 @@ mod tests {
     #[test]
     fn delay_microseconds_matches_reference_formula() {
         let level = Level::DEFAULT;
-        assert_eq!(level.delay_microseconds(), (18_700 / 700) * 10);
+        assert_eq!(level.delay_microseconds(), 187_000 / 700); // 267 µs
     }
 
     #[test]
