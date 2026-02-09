@@ -1,11 +1,19 @@
 //! Bauer stereophonic-to-binaural (bs2b) crossfeed DSP.
 //!
 //! This crate implements the classic bs2b algorithm with an ergonomic Rust API.
+#![cfg_attr(feature = "no_std", no_std)]
 #![forbid(unsafe_code)]
 
-use std::f64::consts::{LN_10, PI};
+#[cfg(all(feature = "std", feature = "no_std"))]
+compile_error!(
+    "features `std` and `no_std` are mutually exclusive; disable default features to use `no_std`"
+);
 
-use thiserror::Error;
+use core::f64::consts::{LN_10, PI};
+use core::fmt;
+
+#[cfg(test)]
+extern crate std;
 
 /// Minimum supported sample rate in Hz.
 pub const MIN_SAMPLE_RATE: u32 = 2_000;
@@ -95,24 +103,49 @@ impl Level {
     }
 }
 
-#[derive(Debug, Error, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// Configuration and processing errors.
 pub enum Bs2bError {
-    #[error("sample rate {0} is out of range [{MIN_SAMPLE_RATE}, {MAX_SAMPLE_RATE}]")]
     InvalidSampleRate(u32),
 
-    #[error("cut frequency {0} Hz is out of range [{MIN_CUT_FREQUENCY}, {MAX_CUT_FREQUENCY}]")]
     InvalidCutFrequency(u32),
 
-    #[error("feed level {0} (dB*10) is out of range [{MIN_FEED_DB_TENTHS}, {MAX_FEED_DB_TENTHS}]")]
     InvalidFeedLevel(u32),
 
-    #[error("interleaved stereo buffer must have an even number of samples, got {0}")]
     OddInterleavedSamples(usize),
 
-    #[error("left/right planar buffers must have equal length, got {left} and {right}")]
     MismatchedPlanarLengths { left: usize, right: usize },
 }
+
+impl fmt::Display for Bs2bError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidSampleRate(sample_rate) => write!(
+                f,
+                "sample rate {sample_rate} is out of range [{MIN_SAMPLE_RATE}, {MAX_SAMPLE_RATE}]"
+            ),
+            Self::InvalidCutFrequency(cut_frequency_hz) => write!(
+                f,
+                "cut frequency {cut_frequency_hz} Hz is out of range [{MIN_CUT_FREQUENCY}, {MAX_CUT_FREQUENCY}]"
+            ),
+            Self::InvalidFeedLevel(feed_db_tenths) => write!(
+                f,
+                "feed level {feed_db_tenths} (dB*10) is out of range [{MIN_FEED_DB_TENTHS}, {MAX_FEED_DB_TENTHS}]"
+            ),
+            Self::OddInterleavedSamples(sample_count) => write!(
+                f,
+                "interleaved stereo buffer must have an even number of samples, got {sample_count}"
+            ),
+            Self::MismatchedPlanarLengths { left, right } => write!(
+                f,
+                "left/right planar buffers must have equal length, got {left} and {right}"
+            ),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for Bs2bError {}
 
 #[derive(Debug, Clone, Copy)]
 struct Coefficients {
@@ -132,16 +165,16 @@ impl Coefficients {
         let gb_lo = level_db * -5.0 / 6.0 - 3.0;
         let gb_hi = level_db / 6.0 - 3.0;
 
-        let g_lo = 10_f64.powf(gb_lo / 20.0);
-        let g_hi = 1.0 - 10_f64.powf(gb_hi / 20.0);
+        let g_lo = powf(10.0, gb_lo / 20.0);
+        let g_hi = 1.0 - powf(10.0, gb_hi / 20.0);
 
-        let fc_hi = fc_lo * 2_f64.powf((gb_lo - 20.0 * log10(g_hi)) / 12.0);
+        let fc_hi = fc_lo * powf(2.0, (gb_lo - 20.0 * log10(g_hi)) / 12.0);
 
-        let x_lo = (-2.0 * PI * fc_lo / sample_rate as f64).exp();
+        let x_lo = exp(-2.0 * PI * fc_lo / sample_rate as f64);
         let b1_lo = x_lo;
         let a0_lo = g_lo * (1.0 - x_lo);
 
-        let x_hi = (-2.0 * PI * fc_hi / sample_rate as f64).exp();
+        let x_hi = exp(-2.0 * PI * fc_hi / sample_rate as f64);
         let b1_hi = x_hi;
         let a0_hi = 1.0 - g_hi * (1.0 - x_hi);
         let a1_hi = -x_hi;
@@ -333,7 +366,37 @@ fn validate_sample_rate(sample_rate: u32) -> Result<(), Bs2bError> {
 }
 
 fn log10(value: f64) -> f64 {
-    value.ln() / LN_10
+    ln(value) / LN_10
+}
+
+#[cfg(feature = "no_std")]
+fn powf(value: f64, power: f64) -> f64 {
+    libm::pow(value, power)
+}
+
+#[cfg(not(feature = "no_std"))]
+fn powf(value: f64, power: f64) -> f64 {
+    value.powf(power)
+}
+
+#[cfg(feature = "no_std")]
+fn exp(value: f64) -> f64 {
+    libm::exp(value)
+}
+
+#[cfg(not(feature = "no_std"))]
+fn exp(value: f64) -> f64 {
+    value.exp()
+}
+
+#[cfg(feature = "no_std")]
+fn ln(value: f64) -> f64 {
+    libm::log(value)
+}
+
+#[cfg(not(feature = "no_std"))]
+fn ln(value: f64) -> f64 {
+    value.ln()
 }
 
 mod private {
@@ -482,6 +545,7 @@ mod tests {
     use approx::assert_abs_diff_eq;
     use rand::rngs::StdRng;
     use rand::{RngExt, SeedableRng};
+    use std::vec::Vec;
 
     use super::*;
 
@@ -537,7 +601,7 @@ mod tests {
     #[test]
     fn interleaved_rejects_odd_length() {
         let mut bs2b = Bs2b::default();
-        let mut data = vec![0.1_f32, 0.2, 0.3];
+        let mut data = std::vec![0.1_f32, 0.2, 0.3];
         assert!(matches!(
             bs2b.process_interleaved(&mut data),
             Err(Bs2bError::OddInterleavedSamples(3))
@@ -547,8 +611,8 @@ mod tests {
     #[test]
     fn planar_rejects_mismatched_lengths() {
         let mut bs2b = Bs2b::default();
-        let mut left = vec![0.1_f32, 0.2];
-        let mut right = vec![0.3_f32];
+        let mut left = std::vec![0.1_f32, 0.2];
+        let mut right = std::vec![0.3_f32];
 
         assert!(matches!(
             bs2b.process_planar(&mut left, &mut right),
@@ -558,9 +622,9 @@ mod tests {
 
     #[test]
     fn planar_and_interleaved_match() {
-        let mut interleaved = vec![0.4_f32, -0.2, 0.1, 0.9, -0.8, 0.3, 0.05, -0.4];
-        let mut left = vec![0.4_f32, 0.1, -0.8, 0.05];
-        let mut right = vec![-0.2_f32, 0.9, 0.3, -0.4];
+        let mut interleaved = std::vec![0.4_f32, -0.2, 0.1, 0.9, -0.8, 0.3, 0.05, -0.4];
+        let mut left = std::vec![0.4_f32, 0.1, -0.8, 0.05];
+        let mut right = std::vec![-0.2_f32, 0.9, 0.3, -0.4];
 
         let mut a = Bs2b::default();
         let mut b = Bs2b::default();
@@ -579,7 +643,7 @@ mod tests {
     #[test]
     fn clips_float_output_to_unit_range() {
         let mut bs2b = Bs2b::default();
-        let mut data = vec![10.0_f32, -10.0, 10.0, -10.0, 10.0, -10.0];
+        let mut data = std::vec![10.0_f32, -10.0, 10.0, -10.0, 10.0, -10.0];
         bs2b.process_interleaved(&mut data)
             .expect("buffer should be valid");
 
@@ -588,7 +652,7 @@ mod tests {
 
     #[test]
     fn unsigned_and_signed_16_bit_paths_match() {
-        let mut signed = vec![1000_i16, -2000, 8000, -100, -32000, 30000];
+        let mut signed = std::vec![1000_i16, -2000, 8000, -100, -32000, 30000];
         let mut unsigned: Vec<u16> = signed.iter().map(|v| (*v as u16) ^ 0x8000).collect();
 
         let mut a = Bs2b::default();
