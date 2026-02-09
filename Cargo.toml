@@ -15,10 +15,9 @@ repository = "https://github.com/xikxp1/bs2b"
 default = ["std"]
 std = []
 streaming = []
-no_std = ["dep:libm"]
 
 [dependencies]
-libm = { version = "0.2.15", optional = true }
+libm = { version = "0.2.15" }
 
 [dev-dependencies]
 approx = "0.5.1"

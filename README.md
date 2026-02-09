@@ -17,7 +17,7 @@ Feature flags:
 
 - `std` (default): enables `std::error::Error` integration for `Bs2bError`.
 - `streaming`: enables optional adapters for callback/iterator streaming APIs.
-- `no_std`: builds the crate in `no_std` mode.
+- disabling default features (`default-features = false`) builds in `no_std` mode.
 
 ## Installation
 
@@ -29,7 +29,7 @@ cargo add bs2b
 
 ```toml
 [dependencies]
-bs2b = { version = "0.1", default-features = false, features = ["no_std"] }
+bs2b = { version = "0.1", default-features = false }
 ```
 
 ## Quick Start
