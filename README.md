@@ -29,7 +29,7 @@ cargo add bs2b
 
 ```toml
 [dependencies]
-bs2b = { version = "0.1", default-features = false }
+bs2b = { version = "0.2", default-features = false }
 ```
 
 ## Quick Start
