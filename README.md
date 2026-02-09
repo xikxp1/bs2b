@@ -16,6 +16,7 @@ This crate ports the reference bs2b algorithm into an idiomatic, type-safe API f
 Feature flags:
 
 - `std` (default): enables `std::error::Error` integration for `Bs2bError`.
+- `streaming`: enables optional adapters for callback/iterator streaming APIs.
 - `no_std`: builds the crate in `no_std` mode.
 
 ## Installation
@@ -76,8 +77,52 @@ Valid ranges:
 ## Real-Time Usage Notes
 
 - `process_frame` is available for callback-style per-frame processing.
+- `streaming::CallbackAdapter` can process interleaved callback buffers (cpal-style).
+- `streaming::StereoSourceAdapter` can wrap interleaved sample iterators (rodio-style).
 - The library does no allocations while processing audio.
 - The processor is `Clone` if you need independent state branches.
+
+## Streaming Adapters
+
+Enable the feature:
+
+```toml
+[dependencies]
+bs2b = { version = "0.1", features = ["streaming"] }
+```
+
+cpal-style callback buffer processing:
+
+```rust
+use bs2b::{Bs2b, Level, streaming::CallbackAdapter};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let processor = Bs2b::new(48_000, Level::DEFAULT)?;
+    let mut adapter = CallbackAdapter::new(processor, 2)?;
+    let mut data = vec![0.0_f32; 512];
+
+    // In your audio callback:
+    // fn callback(data: &mut [f32]) {
+    adapter.process(&mut data)?;
+    // }
+    Ok(())
+}
+```
+
+rodio-style interleaved iterator processing:
+
+```rust
+use bs2b::{Bs2b, Level, streaming::StereoSourceAdapter};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let processor = Bs2b::new(48_000, Level::DEFAULT)?;
+    let input = vec![0.1_f32, -0.1, 0.2, -0.2];
+
+    let output: Vec<f32> = StereoSourceAdapter::new(input.into_iter(), processor).collect();
+    let _ = output;
+    Ok(())
+}
+```
 
 ## Testing and Benchmarks
 

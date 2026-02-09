@@ -93,6 +93,8 @@ Primary entry points:
 - `process_frame`: callback-style frame processing.
 - `process_interleaved`: in-place `L,R,L,R` buffer processing.
 - `process_planar`: in-place left/right buffer processing.
+- `streaming::CallbackAdapter`: callback-buffer adapter for cpal-style APIs.
+- `streaming::StereoSourceAdapter`: iterator adapter for rodio-style APIs.
 
 Validation decisions:
 
@@ -108,7 +110,6 @@ Validation decisions:
 Potential future extension points:
 
 - SIMD-accelerated batch kernels.
-- Optional streaming adapters for `cpal`/`rodio` style callback APIs.
 
 ## 9. Testing Strategy
 
