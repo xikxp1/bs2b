@@ -26,5 +26,11 @@ jobs:
       - name: Rust clippy
         run: cargo clippy -- -D warnings
 
+      - name: Rust clippy (no_std)
+        run: cargo clippy --no-default-features --features no_std -- -D warnings
+
       - name: Run tests
         run: cargo test
+
+      - name: Run tests (no_std)
+        run: cargo test --no-default-features --features no_std

@@ -11,8 +11,13 @@ authors = ["Ivan Kachalkin<xikxp1@gmail.com>"]
 publish = true
 repository = "https://github.com/xikxp1/bs2b"
 
+[features]
+default = ["std"]
+std = []
+no_std = ["dep:libm"]
+
 [dependencies]
-thiserror = "2.0.18"
+libm = { version = "0.2.15", optional = true }
 
 [dev-dependencies]
 approx = "0.5.1"

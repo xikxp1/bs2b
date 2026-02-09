@@ -108,7 +108,6 @@ Validation decisions:
 Potential future extension points:
 
 - SIMD-accelerated batch kernels.
-- Optional `no_std` mode.
 - Optional streaming adapters for `cpal`/`rodio` style callback APIs.
 
 ## 9. Testing Strategy

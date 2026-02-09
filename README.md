@@ -13,10 +13,22 @@ This crate ports the reference bs2b algorithm into an idiomatic, type-safe API f
 - Built-in preset levels: `DEFAULT`, `CMOY`, `JMEIER`.
 - Benchmarks (Criterion) and tests included.
 
+Feature flags:
+
+- `std` (default): enables `std::error::Error` integration for `Bs2bError`.
+- `no_std`: builds the crate in `no_std` mode.
+
 ## Installation
 
 ```bash
 cargo add bs2b
+```
+
+`no_std` mode:
+
+```toml
+[dependencies]
+bs2b = { version = "0.1", default-features = false, features = ["no_std"] }
 ```
 
 ## Quick Start
