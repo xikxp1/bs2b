@@ -286,6 +286,7 @@ impl Bs2b {
     }
 
     /// Processes one stereo frame and returns the transformed frame.
+    #[inline]
     pub fn process_frame<T: Sample>(&mut self, left: T, right: T) -> (T, T) {
         let (left, right) = self.process_frame_f64(left.to_f64(), right.to_f64());
         (
@@ -329,24 +330,30 @@ impl Bs2b {
         Ok(())
     }
 
+    #[inline(always)]
     fn process_frame_f64(&mut self, left: f64, right: f64) -> (f64, f64) {
-        self.state.lo[0] =
-            self.coefficients.a0_lo * left + self.coefficients.b1_lo * self.state.lo[0];
-        self.state.lo[1] =
-            self.coefficients.a0_lo * right + self.coefficients.b1_lo * self.state.lo[1];
+        // Keep corresponding channel values together so LLVM can lower the
+        // independent recurrences to a two-lane SIMD vector.
+        let input = [left, right];
+        let lo = [
+            self.coefficients.a0_lo * input[0] + self.coefficients.b1_lo * self.state.lo[0],
+            self.coefficients.a0_lo * input[1] + self.coefficients.b1_lo * self.state.lo[1],
+        ];
+        let hi = [
+            self.coefficients.a0_hi * input[0]
+                + self.coefficients.a1_hi * self.state.asis[0]
+                + self.coefficients.b1_hi * self.state.hi[0],
+            self.coefficients.a0_hi * input[1]
+                + self.coefficients.a1_hi * self.state.asis[1]
+                + self.coefficients.b1_hi * self.state.hi[1],
+        ];
 
-        self.state.hi[0] = self.coefficients.a0_hi * left
-            + self.coefficients.a1_hi * self.state.asis[0]
-            + self.coefficients.b1_hi * self.state.hi[0];
-        self.state.hi[1] = self.coefficients.a0_hi * right
-            + self.coefficients.a1_hi * self.state.asis[1]
-            + self.coefficients.b1_hi * self.state.hi[1];
+        self.state.asis = input;
+        self.state.lo = lo;
+        self.state.hi = hi;
 
-        self.state.asis[0] = left;
-        self.state.asis[1] = right;
-
-        let left = (self.state.hi[0] + self.state.lo[1]) * self.coefficients.gain;
-        let right = (self.state.hi[1] + self.state.lo[0]) * self.coefficients.gain;
+        let left = (hi[0] + lo[1]) * self.coefficients.gain;
+        let right = (hi[1] + lo[0]) * self.coefficients.gain;
 
         (left, right)
     }

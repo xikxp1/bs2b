@@ -104,12 +104,11 @@ Validation decisions:
 ## 8. Performance Notes
 
 - No heap allocation during processing.
-- Tight recurrence loop over mutable slices.
+- The stereo recurrence uses fixed two-element arrays, allowing LLVM to
+  autovectorize the independent left/right arithmetic where SIMD is available.
+- Tight recurrence loop over mutable slices, with a scalar-compatible fallback
+  on targets where the compiler does not emit vector instructions.
 - Criterion benchmarks cover both interleaved and planar paths.
-
-Potential future extension points:
-
-- SIMD-accelerated batch kernels.
 
 ## 9. Testing Strategy
 
