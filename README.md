@@ -66,7 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```rust
 use bs2b::Level;
 
-let level = Level::new(700, 45)?; // cut_frequency_hz, feed_db_tenths
+let level = Level::new(700, 45).expect("valid level"); // cut_frequency_hz, feed_db_tenths
 ```
 
 Valid ranges:
