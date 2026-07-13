@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [0.2.1](https://github.com/xikxp1/bs2b/compare/v0.2.0...v0.2.1) - 2026-07-13
+
+### Other
+
+- minor readability update
+
 ## [0.2.0](https://github.com/xikxp1/bs2b/compare/v0.1.2...v0.2.0) - 2026-02-09
 
 ### Added
