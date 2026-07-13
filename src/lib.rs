@@ -1,6 +1,4 @@
-//! Bauer stereophonic-to-binaural (bs2b) crossfeed DSP.
-//!
-//! This crate implements the classic bs2b algorithm with an ergonomic Rust API.
+//![doc = include_str!("../README.md")]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![forbid(unsafe_code)]
 
