@@ -50,8 +50,7 @@ impl fmt::Display for StreamingError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for StreamingError {}
+impl core::error::Error for StreamingError {}
 
 /// In-place adapter for callback APIs that provide interleaved frame buffers.
 ///

@@ -15,7 +15,7 @@ This crate ports the reference bs2b algorithm into an idiomatic, type-safe API f
 
 Feature flags:
 
-- `std` (default): enables `std::error::Error` integration for `Bs2bError`.
+- `std` (default): builds the crate with the standard library available.
 - `streaming`: enables optional adapters for callback/iterator streaming APIs.
 - disabling default features (`default-features = false`) builds in `no_std` mode.
 
@@ -66,7 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```rust
 use bs2b::Level;
 
-let level = Level::new(700, 45)?; // cut_frequency_hz, feed_db_tenths
+let level = Level::new(700, 45).expect("valid level"); // cut_frequency_hz, feed_db_tenths
 ```
 
 Valid ranges:
